@@ -390,11 +390,6 @@ func postChair(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	tx, err := dbChair.Begin()
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	defer tx.Rollback()
 	query := "INSERT INTO chair(id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock) VALUES "
 	for _, row := range records {
 		rm := RecordMapper{Record: row}
@@ -417,15 +412,12 @@ func postChair(c echo.Context) error {
 		query += fmt.Sprintf("('%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v'),", id, name, description, thumbnail, price, height, width, depth, color, features, kind, popularity, stock)
 	}
 	query = query[:len(query)-1]
-	_, err = tx.Exec(query)
+	_, err = dbChair.Exec(query)
 	if err != nil {
 		c.Logger().Errorf("failed to insert chair: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	if err := tx.Commit(); err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
 	return c.NoContent(http.StatusCreated)
 }
 
