@@ -336,6 +336,17 @@ func initialize(c echo.Context) error {
 		if err := exec.Command("bash", "-c", cmdStr).Run(); err != nil {
 			return c.NoContent(http.StatusInternalServerError)
 		}
+		cmdStr = fmt.Sprintf("mysql -h %v -u %v -p%v -P %v %v < %v",
+			mySQLConnectionDataEstate.Host,
+			mySQLConnectionDataEstate.User,
+			mySQLConnectionDataEstate.Password,
+			mySQLConnectionDataEstate.Port,
+			mySQLConnectionDataEstate.DBName,
+			sqlFile,
+		)
+		if err := exec.Command("bash", "-c", cmdStr).Run(); err != nil {
+			return c.NoContent(http.StatusInternalServerError)
+		}
 	}
 
 	return c.JSON(http.StatusOK, InitializeResponse{
