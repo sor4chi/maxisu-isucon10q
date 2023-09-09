@@ -453,6 +453,8 @@ func searchChairs(c echo.Context) error {
 		c.QueryParam("kind"),
 		c.QueryParam("color"),
 		c.QueryParam("features"),
+		c.QueryParam("page"),
+		c.QueryParam("perPage"),
 	})
 
 	chair, ok := chairCache.Get(key)
