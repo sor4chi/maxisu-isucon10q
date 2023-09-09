@@ -13,6 +13,7 @@ CREATE TABLE isuumo.estate
     address     VARCHAR(128)        NOT NULL,
     latitude    DOUBLE PRECISION    NOT NULL,
     longitude   DOUBLE PRECISION    NOT NULL,
+    point       POINT AS (POINT(latitude, longitude)) STORED NOT NULL,
     rent        INTEGER             NOT NULL,
     door_height INTEGER             NOT NULL,
     door_width  INTEGER             NOT NULL,
@@ -41,3 +42,4 @@ CREATE INDEX chair_price_id_idx ON isuumo.chair (price ASC, id ASC);
 CREATE INDEX chair_popularity_id_idx ON isuumo.chair (popularity DESC, id ASC);
 CREATE INDEX estate_popularity_id_idx ON isuumo.estate (popularity DESC, id ASC);
 CREATE INDEX estate_rent_id_idx ON isuumo.estate (rent ASC, id ASC);
+CREATE SPATIAL INDEX estate_point_id_idx ON isuumo.estate (point);

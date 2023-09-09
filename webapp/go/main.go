@@ -65,6 +65,7 @@ type Estate struct {
 	Description string  `db:"description" json:"description"`
 	Latitude    float64 `db:"latitude" json:"latitude"`
 	Longitude   float64 `db:"longitude" json:"longitude"`
+	Point       string  `db:"point" json:"-"`
 	Address     string  `db:"address" json:"address"`
 	Rent        int64   `db:"rent" json:"rent"`
 	DoorHeight  int64   `db:"door_height" json:"doorHeight"`
@@ -828,7 +829,7 @@ func searchEstateNazotte(c echo.Context) error {
 	}
 
 	estatesInBoundingBox := []Estate{}
-	query := fmt.Sprintf(`SELECT * FROM estate WHERE ST_INTERSECTS(ST_PolygonFromText(%s), POINT(latitude, longitude)) ORDER BY popularity DESC, id ASC LIMIT ?`, coordinates.coordinatesToText())
+	query := fmt.Sprintf(`SELECT * FROM estate WHERE ST_INTERSECTS(ST_PolygonFromText(%s), point) ORDER BY popularity DESC, id ASC LIMIT ?`, coordinates.coordinatesToText())
 	err = db.Select(&estatesInBoundingBox, query, NazotteLimit)
 	if err == sql.ErrNoRows {
 		return c.JSON(http.StatusOK, EstateSearchResponse{Count: 0, Estates: []Estate{}})
