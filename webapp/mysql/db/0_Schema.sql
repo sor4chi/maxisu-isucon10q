@@ -13,7 +13,7 @@ CREATE TABLE isuumo.estate
     address     VARCHAR(128)        NOT NULL,
     latitude    DOUBLE PRECISION    NOT NULL,
     longitude   DOUBLE PRECISION    NOT NULL,
-    point       POINT AS (PointFromText(CONCAT('POINT(', longitude, ' ', latitude, ')'))) STORED NOT NULL,
+    point       POINT AS (Point(longitude, latitude)) STORED NOT NULL,
     rent        INTEGER             NOT NULL,
     door_height INTEGER             NOT NULL,
     door_width  INTEGER             NOT NULL,
@@ -41,4 +41,4 @@ CREATE TABLE isuumo.chair
 CREATE INDEX isuumo_price_id_idx ON isuumo.chair (price ASC, id ASC);
 CREATE INDEX estate_popularity_id_idx ON isuumo.estate (popularity DESC, id ASC);
 CREATE INDEX estate_rent_id_idx ON isuumo.estate (rent ASC, id ASC);
-CREATE INDEX estate_point_idx ON isuumo.estate USING GIST (point);
+CREATE INDEX estate_point_idx ON isuumo.estate (point)
