@@ -1,9 +1,10 @@
 package main
 
 type EstateCache struct {
-	search    map[string]EstateSearchResponse
-	detail    map[string]Estate
-	lowPriced []Estate
+	search                           map[string]EstateSearchResponse
+	detail                           map[string]Estate
+	lowPriced                        []Estate
+	searchRecommendedEstateWithChair map[string][]Estate
 }
 
 func (c *EstateCache) GetSearch(key string) (EstateSearchResponse, bool) {
@@ -43,11 +44,21 @@ func (c *EstateCache) PurgeLowPriced() {
 	c.lowPriced = make([]Estate, 0)
 }
 
+func (e *EstateCache) GetRecommendedEstateWithChair(key string) ([]Estate, bool) {
+	val, ok := e.searchRecommendedEstateWithChair[key]
+	return val, ok
+}
+
+func (e *EstateCache) SetRecommendedEstateWithChair(key string, value []Estate) {
+	e.searchRecommendedEstateWithChair[key] = value
+}
+
 func NewEstateCache() *EstateCache {
 	return &EstateCache{
-		search:    make(map[string]EstateSearchResponse),
-		detail:    make(map[string]Estate),
-		lowPriced: make([]Estate, 0),
+		search:                           make(map[string]EstateSearchResponse),
+		detail:                           make(map[string]Estate),
+		lowPriced:                        make([]Estate, 0),
+		searchRecommendedEstateWithChair: make(map[string][]Estate),
 	}
 }
 

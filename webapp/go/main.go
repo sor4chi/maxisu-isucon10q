@@ -857,6 +857,10 @@ func searchRecommendedEstateWithChair(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
+	if chair, ok := estateCache.GetRecommendedEstateWithChair(c.Param("id")); ok {
+		return c.JSON(http.StatusOK, EstateListResponse{Estates: chair})
+	}
+
 	chair := Chair{}
 	query := `SELECT * FROM chair WHERE id = ?`
 	err = dbChair.Get(&chair, query, id)
@@ -879,6 +883,8 @@ func searchRecommendedEstateWithChair(c echo.Context) error {
 		}
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	estateCache.SetRecommendedEstateWithChair(c.Param("id"), estates)
 
 	return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
 }
