@@ -20,3 +20,8 @@ alp:
 .PHONY: pt
 pt:
 	sudo pt-query-digest /var/log/mysql/mysql-slow.log
+
+.PHONY: app-deploy
+app-deploy:
+	cd ./webapp/go && make
+	systemctl restart isuumo.go.service
