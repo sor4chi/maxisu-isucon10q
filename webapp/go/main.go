@@ -574,27 +574,7 @@ func buyChair(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	tx, err := dbChair.Beginx()
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	defer tx.Rollback()
-
-	var chair Chair
-	err = tx.QueryRowx("SELECT * FROM chair WHERE id = ? AND stock > 0 FOR UPDATE", id).StructScan(&chair)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return c.NoContent(http.StatusNotFound)
-		}
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	_, err = tx.Exec("UPDATE chair SET stock = stock - 1 WHERE id = ?", id)
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	err = tx.Commit()
+	_, err = dbChair.Exec("UPDATE chair SET stock = stock - 1 WHERE id = ? AND stock > 0", id)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
