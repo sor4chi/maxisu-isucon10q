@@ -431,6 +431,7 @@ func postChair(c echo.Context) error {
 	}
 
 	chairCache.PurgeSearch()
+	chairCache.PurgeLowPriced()
 
 	return c.NoContent(http.StatusCreated)
 }
@@ -606,6 +607,7 @@ func buyChair(c echo.Context) error {
 
 	chairCache.PurgeSearch()
 	chairCache.PurgeDetailByKey(c.Param("id"))
+	chairCache.PurgeLowPriced()
 
 	return c.NoContent(http.StatusOK)
 }
@@ -615,6 +617,9 @@ func getChairSearchCondition(c echo.Context) error {
 }
 
 func getLowPricedChair(c echo.Context) error {
+	if chairs, ok := chairCache.GetLowPriced(); ok {
+		return c.JSON(http.StatusOK, ChairListResponse{Chairs: chairs})
+	}
 	var chairs []Chair
 	query := `SELECT * FROM chair WHERE stock > 0 ORDER BY price ASC, id ASC LIMIT ?`
 	err := dbChair.Select(&chairs, query, Limit)
@@ -624,6 +629,8 @@ func getLowPricedChair(c echo.Context) error {
 		}
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	chairCache.SetLowPriced(chairs)
 
 	return c.JSON(http.StatusOK, ChairListResponse{Chairs: chairs})
 }
