@@ -22,3 +22,26 @@ func NewEstateCache() *EstateCache {
 		search: make(map[string]EstateSearchResponse),
 	}
 }
+
+type ChairCache struct {
+	search map[string]ChairSearchResponse
+}
+
+func (c *ChairCache) Get(key string) (ChairSearchResponse, bool) {
+	val, ok := c.search[key]
+	return val, ok
+}
+
+func (c *ChairCache) Set(key string, value ChairSearchResponse) {
+	c.search[key] = value
+}
+
+func (c *ChairCache) PurgeSearch() {
+	c.search = make(map[string]ChairSearchResponse)
+}
+
+func NewChairCache() *ChairCache {
+	return &ChairCache{
+		search: make(map[string]ChairSearchResponse),
+	}
+}

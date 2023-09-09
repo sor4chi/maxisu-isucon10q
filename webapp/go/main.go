@@ -31,6 +31,7 @@ var chairSearchCondition ChairSearchCondition
 var estateSearchCondition EstateSearchCondition
 
 var estateCache *EstateCache
+var chairCache *ChairCache
 
 type InitializeResponse struct {
 	Language string `json:"language"`
@@ -314,6 +315,7 @@ func main() {
 
 	// Initialize cache
 	estateCache = NewEstateCache()
+	chairCache = NewChairCache()
 
 	// Start server
 	serverPort := fmt.Sprintf(":%v", getEnv("SERVER_PORT", "1323"))
@@ -419,9 +421,10 @@ func postChair(c echo.Context) error {
 	query = query[:len(query)-1]
 	_, err = dbChair.Exec(query)
 	if err != nil {
-		c.Logger().Errorf("failed to insert chair: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	chairCache.PurgeSearch()
 
 	return c.NoContent(http.StatusCreated)
 }
@@ -433,6 +436,21 @@ func generateKeyFromParams(params []string) string {
 func searchChairs(c echo.Context) error {
 	conditions := make([]string, 0)
 	params := make([]interface{}, 0)
+
+	key := generateKeyFromParams([]string{
+		c.QueryParam("priceRangeId"),
+		c.QueryParam("heightRangeId"),
+		c.QueryParam("widthRangeId"),
+		c.QueryParam("depthRangeId"),
+		c.QueryParam("kind"),
+		c.QueryParam("color"),
+		c.QueryParam("features"),
+	})
+
+	chair, ok := chairCache.Get(key)
+	if ok {
+		return c.JSON(http.StatusOK, chair)
+	}
 
 	if c.QueryParam("priceRangeId") != "" {
 		chairPrice, err := getRange(chairSearchCondition.Price, c.QueryParam("priceRangeId"))
@@ -554,6 +572,8 @@ func searchChairs(c echo.Context) error {
 
 	res.Chairs = chairs
 
+	chairCache.Set(key, res)
+
 	return c.JSON(http.StatusOK, res)
 }
 
@@ -577,6 +597,8 @@ func buyChair(c echo.Context) error {
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	chairCache.PurgeSearch()
 
 	return c.NoContent(http.StatusOK)
 }
