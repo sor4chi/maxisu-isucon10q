@@ -367,6 +367,10 @@ func getChairDetail(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
+	if chair, ok := chairCache.GetDetail(c.Param("id")); ok {
+		return c.JSON(http.StatusOK, chair)
+	}
+
 	chair := Chair{}
 	query := `SELECT * FROM chair WHERE id = ?`
 	err = dbChair.Get(&chair, query, id)
@@ -378,6 +382,8 @@ func getChairDetail(c echo.Context) error {
 	} else if chair.Stock <= 0 {
 		return c.NoContent(http.StatusNotFound)
 	}
+
+	chairCache.SetDetail(c.Param("id"), chair)
 
 	return c.JSON(http.StatusOK, chair)
 }
@@ -425,6 +431,7 @@ func postChair(c echo.Context) error {
 	}
 
 	chairCache.PurgeSearch()
+	chairCache.PurgeLowPriced()
 
 	return c.NoContent(http.StatusCreated)
 }
@@ -599,6 +606,8 @@ func buyChair(c echo.Context) error {
 	}
 
 	chairCache.PurgeSearch()
+	chairCache.PurgeDetailByKey(c.Param("id"))
+	chairCache.PurgeLowPriced()
 
 	return c.NoContent(http.StatusOK)
 }
@@ -608,6 +617,9 @@ func getChairSearchCondition(c echo.Context) error {
 }
 
 func getLowPricedChair(c echo.Context) error {
+	if chairs, ok := chairCache.GetLowPriced(); ok {
+		return c.JSON(http.StatusOK, ChairListResponse{Chairs: chairs})
+	}
 	var chairs []Chair
 	query := `SELECT * FROM chair WHERE stock > 0 ORDER BY price ASC, id ASC LIMIT ?`
 	err := dbChair.Select(&chairs, query, Limit)
@@ -618,6 +630,8 @@ func getLowPricedChair(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
+	chairCache.SetLowPriced(chairs)
+
 	return c.JSON(http.StatusOK, ChairListResponse{Chairs: chairs})
 }
 
@@ -625,6 +639,10 @@ func getEstateDetail(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.NoContent(http.StatusBadRequest)
+	}
+
+	if estate, ok := estateCache.GetDetail(c.Param("id")); ok {
+		return c.JSON(http.StatusOK, estate)
 	}
 
 	var estate Estate
@@ -635,6 +653,8 @@ func getEstateDetail(c echo.Context) error {
 		}
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	estateCache.SetDetail(c.Param("id"), estate)
 
 	return c.JSON(http.StatusOK, estate)
 }
@@ -694,6 +714,7 @@ func postEstate(c echo.Context) error {
 	}
 
 	estateCache.PurgeSearch()
+	estateCache.PurgeLowPriced()
 
 	return c.NoContent(http.StatusCreated)
 }
@@ -709,7 +730,7 @@ func searchEstates(c echo.Context) error {
 		c.QueryParam("features"),
 	})
 
-	estate, ok := estateCache.Get(key)
+	estate, ok := estateCache.GetSearch(key)
 	if ok {
 		return c.JSON(http.StatusOK, estate)
 	}
@@ -806,12 +827,15 @@ func searchEstates(c echo.Context) error {
 
 	res.Estates = estates
 
-	estateCache.Set(key, res)
+	estateCache.SetSearch(key, res)
 
 	return c.JSON(http.StatusOK, res)
 }
 
 func getLowPricedEstate(c echo.Context) error {
+	if estates, ok := estateCache.GetLowPriced(); ok {
+		return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
+	}
 	estates := make([]Estate, 0, Limit)
 	query := `SELECT * FROM estate ORDER BY rent ASC, id ASC LIMIT ?`
 	err := dbEstate.Select(&estates, query, Limit)
@@ -822,6 +846,8 @@ func getLowPricedEstate(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
+	estateCache.SetLowPriced(estates)
+
 	return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
 }
 
@@ -829,6 +855,10 @@ func searchRecommendedEstateWithChair(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.NoContent(http.StatusBadRequest)
+	}
+
+	if chair, ok := estateCache.GetRecommendedEstateWithChair(c.Param("id")); ok {
+		return c.JSON(http.StatusOK, EstateListResponse{Estates: chair})
 	}
 
 	chair := Chair{}
@@ -853,6 +883,8 @@ func searchRecommendedEstateWithChair(c echo.Context) error {
 		}
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	estateCache.SetRecommendedEstateWithChair(c.Param("id"), estates)
 
 	return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
 }
