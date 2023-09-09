@@ -18,6 +18,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/pkg/profile"
 )
 
 const Limit = 20
@@ -253,6 +254,9 @@ func init() {
 }
 
 func main() {
+	// pprof
+	profile := profile.Start(profile.ProfilePath("/home/isucon/isuumo/webapp/go"))
+
 	// Echo instance
 	e := echo.New()
 	e.Debug = true
@@ -282,6 +286,10 @@ func main() {
 	e.POST("/api/estate/nazotte", searchEstateNazotte)
 	e.GET("/api/estate/search/condition", getEstateSearchCondition)
 	e.GET("/api/recommended_estate/:id", searchRecommendedEstateWithChair)
+	e.GET("/stop", func(c echo.Context) error {
+		profile.Stop()
+		return c.String(http.StatusOK, "stopped profile")
+	})
 
 	mySQLConnectionData = NewMySQLConnectionEnv()
 

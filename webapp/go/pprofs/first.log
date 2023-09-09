@@ -1,0 +1,246 @@
+ROUTINE ======================== main.buyChair in /home/isucon/isuumo/webapp/go/main.go
+         0       10ms (flat, cum)   0.5% of Total
+         .          .    563:		return c.NoContent(http.StatusInternalServerError)
+         .          .    564:	}
+         .          .    565:	defer tx.Rollback()
+         .          .    566:
+         .          .    567:	var chair Chair
+         .       10ms    568:	err = tx.QueryRowx("SELECT * FROM chair WHERE id = ? AND stock > 0 FOR UPDATE", id).StructScan(&chair)
+         .          .    569:	if err != nil {
+         .          .    570:		if err == sql.ErrNoRows {
+         .          .    571:			c.Echo().Logger.Infof("buyChair chair id \"%v\" not found", id)
+         .          .    572:			return c.NoContent(http.StatusNotFound)
+         .          .    573:		}
+ROUTINE ======================== main.getChairDetail in /home/isucon/isuumo/webapp/go/main.go
+         0       10ms (flat, cum)   0.5% of Total
+         .          .    328:		return c.NoContent(http.StatusBadRequest)
+         .          .    329:	}
+         .          .    330:
+         .          .    331:	chair := Chair{}
+         .          .    332:	query := `SELECT * FROM chair WHERE id = ?`
+         .       10ms    333:	err = db.Get(&chair, query, id)
+         .          .    334:	if err != nil {
+         .          .    335:		if err == sql.ErrNoRows {
+         .          .    336:			c.Echo().Logger.Infof("requested id's chair not found : %v", id)
+         .          .    337:			return c.NoContent(http.StatusNotFound)
+         .          .    338:		}
+ROUTINE ======================== main.getEstateDetail in /home/isucon/isuumo/webapp/go/main.go
+         0       80ms (flat, cum)  3.98% of Total
+         .          .    616:		c.Echo().Logger.Infof("Request parameter \"id\" parse error : %v", err)
+         .          .    617:		return c.NoContent(http.StatusBadRequest)
+         .          .    618:	}
+         .          .    619:
+         .          .    620:	var estate Estate
+         .       70ms    621:	err = db.Get(&estate, "SELECT * FROM estate WHERE id = ?", id)
+         .          .    622:	if err != nil {
+         .          .    623:		if err == sql.ErrNoRows {
+         .          .    624:			c.Echo().Logger.Infof("getEstateDetail estate id %v not found", id)
+         .          .    625:			return c.NoContent(http.StatusNotFound)
+         .          .    626:		}
+         .          .    627:		c.Echo().Logger.Errorf("Database Execution error : %v", err)
+         .          .    628:		return c.NoContent(http.StatusInternalServerError)
+         .          .    629:	}
+         .          .    630:
+         .       10ms    631:	return c.JSON(http.StatusOK, estate)
+         .          .    632:}
+         .          .    633:
+         .          .    634:func getRange(cond RangeCondition, rangeID string) (*Range, error) {
+         .          .    635:	RangeIndex, err := strconv.Atoi(rangeID)
+         .          .    636:	if err != nil {
+ROUTINE ======================== main.getEstateSearchCondition in /home/isucon/isuumo/webapp/go/main.go
+         0       30ms (flat, cum)  1.49% of Total
+         .          .    945:
+         .          .    946:	return c.NoContent(http.StatusOK)
+         .          .    947:}
+         .          .    948:
+         .          .    949:func getEstateSearchCondition(c echo.Context) error {
+         .       30ms    950:	return c.JSON(http.StatusOK, estateSearchCondition)
+         .          .    951:}
+         .          .    952:
+         .          .    953:func (cs Coordinates) getBoundingBox() BoundingBox {
+         .          .    954:	coordinates := cs.Coordinates
+         .          .    955:	boundingBox := BoundingBox{
+ROUTINE ======================== main.getLowPricedChair in /home/isucon/isuumo/webapp/go/main.go
+         0       50ms (flat, cum)  2.49% of Total
+         .          .    595:}
+         .          .    596:
+         .          .    597:func getLowPricedChair(c echo.Context) error {
+         .          .    598:	var chairs []Chair
+         .          .    599:	query := `SELECT * FROM chair WHERE stock > 0 ORDER BY price ASC, id ASC LIMIT ?`
+         .       40ms    600:	err := db.Select(&chairs, query, Limit)
+         .          .    601:	if err != nil {
+         .          .    602:		if err == sql.ErrNoRows {
+         .          .    603:			c.Logger().Error("getLowPricedChair not found")
+         .          .    604:			return c.JSON(http.StatusOK, ChairListResponse{[]Chair{}})
+         .          .    605:		}
+         .          .    606:		c.Logger().Errorf("getLowPricedChair DB execution error : %v", err)
+         .          .    607:		return c.NoContent(http.StatusInternalServerError)
+         .          .    608:	}
+         .          .    609:
+         .       10ms    610:	return c.JSON(http.StatusOK, ChairListResponse{Chairs: chairs})
+         .          .    611:}
+         .          .    612:
+         .          .    613:func getEstateDetail(c echo.Context) error {
+         .          .    614:	id, err := strconv.Atoi(c.Param("id"))
+         .          .    615:	if err != nil {
+ROUTINE ======================== main.getLowPricedEstate in /home/isucon/isuumo/webapp/go/main.go
+         0      150ms (flat, cum)  7.46% of Total
+         .          .    807:}
+         .          .    808:
+         .          .    809:func getLowPricedEstate(c echo.Context) error {
+         .          .    810:	estates := make([]Estate, 0, Limit)
+         .          .    811:	query := `SELECT * FROM estate ORDER BY rent ASC, id ASC LIMIT ?`
+         .       40ms    812:	err := db.Select(&estates, query, Limit)
+         .          .    813:	if err != nil {
+         .          .    814:		if err == sql.ErrNoRows {
+         .          .    815:			c.Logger().Error("getLowPricedEstate not found")
+         .          .    816:			return c.JSON(http.StatusOK, EstateListResponse{[]Estate{}})
+         .          .    817:		}
+         .          .    818:		c.Logger().Errorf("getLowPricedEstate DB execution error : %v", err)
+         .          .    819:		return c.NoContent(http.StatusInternalServerError)
+         .          .    820:	}
+         .          .    821:
+         .      110ms    822:	return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
+         .          .    823:}
+         .          .    824:
+         .          .    825:func searchRecommendedEstateWithChair(c echo.Context) error {
+         .          .    826:	id, err := strconv.Atoi(c.Param("id"))
+         .          .    827:	if err != nil {
+ROUTINE ======================== main.main in /home/isucon/isuumo/webapp/go/main.go
+         0       70ms (flat, cum)  3.48% of Total
+         .          .    287:	db.SetMaxOpenConns(10)
+         .          .    288:	defer db.Close()
+         .          .    289:
+         .          .    290:	// Start server
+         .          .    291:	serverPort := fmt.Sprintf(":%v", getEnv("SERVER_PORT", "1323"))
+         .       70ms    292:	e.Logger.Fatal(e.Start(serverPort))
+         .          .    293:}
+         .          .    294:
+         .          .    295:func initialize(c echo.Context) error {
+         .          .    296:	sqlDir := filepath.Join("..", "mysql", "db")
+         .          .    297:	paths := []string{
+ROUTINE ======================== main.postEstate in /home/isucon/isuumo/webapp/go/main.go
+         0       30ms (flat, cum)  1.49% of Total
+         .          .    684:		popularity := rm.NextInt()
+         .          .    685:		if err := rm.Err(); err != nil {
+         .          .    686:			c.Logger().Errorf("failed to read record: %v", err)
+         .          .    687:			return c.NoContent(http.StatusBadRequest)
+         .          .    688:		}
+         .       30ms    689:		_, err := tx.Exec("INSERT INTO estate(id, name, description, thumbnail, address, latitude, longitude, rent, door_height, door_width, features, popularity) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", id, name, description, thumbnail, address, latitude, longitude, rent, doorHeight, doorWidth, features, popularity)
+         .          .    690:		if err != nil {
+         .          .    691:			c.Logger().Errorf("failed to insert estate: %v", err)
+         .          .    692:			return c.NoContent(http.StatusInternalServerError)
+         .          .    693:		}
+         .          .    694:	}
+ROUTINE ======================== main.postEstateRequestDocument in /home/isucon/isuumo/webapp/go/main.go
+         0       10ms (flat, cum)   0.5% of Total
+         .          .    932:		return c.NoContent(http.StatusBadRequest)
+         .          .    933:	}
+         .          .    934:
+         .          .    935:	estate := Estate{}
+         .          .    936:	query := `SELECT * FROM estate WHERE id = ?`
+         .       10ms    937:	err = db.Get(&estate, query, id)
+         .          .    938:	if err != nil {
+         .          .    939:		if err == sql.ErrNoRows {
+         .          .    940:			return c.NoContent(http.StatusNotFound)
+         .          .    941:		}
+         .          .    942:		c.Logger().Errorf("postEstateRequestDocument DB execution error : %v", err)
+ROUTINE ======================== main.searchChairs in /home/isucon/isuumo/webapp/go/main.go
+         0      330ms (flat, cum) 16.42% of Total
+         .          .    514:	countQuery := "SELECT COUNT(*) FROM chair WHERE "
+         .          .    515:	searchCondition := strings.Join(conditions, " AND ")
+         .          .    516:	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
+         .          .    517:
+         .          .    518:	var res ChairSearchResponse
+         .       20ms    519:	err = db.Get(&res.Count, countQuery+searchCondition, params...)
+         .          .    520:	if err != nil {
+         .          .    521:		c.Logger().Errorf("searchChairs DB execution error : %v", err)
+         .          .    522:		return c.NoContent(http.StatusInternalServerError)
+         .          .    523:	}
+         .          .    524:
+         .          .    525:	chairs := []Chair{}
+         .          .    526:	params = append(params, perPage, page*perPage)
+         .      150ms    527:	err = db.Select(&chairs, searchQuery+searchCondition+limitOffset, params...)
+         .          .    528:	if err != nil {
+         .          .    529:		if err == sql.ErrNoRows {
+         .          .    530:			return c.JSON(http.StatusOK, ChairSearchResponse{Count: 0, Chairs: []Chair{}})
+         .          .    531:		}
+         .          .    532:		c.Logger().Errorf("searchChairs DB execution error : %v", err)
+         .          .    533:		return c.NoContent(http.StatusInternalServerError)
+         .          .    534:	}
+         .          .    535:
+         .          .    536:	res.Chairs = chairs
+         .          .    537:
+         .      160ms    538:	return c.JSON(http.StatusOK, res)
+         .          .    539:}
+         .          .    540:
+         .          .    541:func buyChair(c echo.Context) error {
+         .          .    542:	m := echo.Map{}
+         .          .    543:	if err := c.Bind(&m); err != nil {
+ROUTINE ======================== main.searchEstateNazotte in /home/isucon/isuumo/webapp/go/main.go
+         0       30ms (flat, cum)  1.49% of Total
+         .          .    886:	for _, estate := range estatesInBoundingBox {
+         .          .    887:		validatedEstate := Estate{}
+         .          .    888:
+         .          .    889:		point := fmt.Sprintf("'POINT(%f %f)'", estate.Latitude, estate.Longitude)
+         .          .    890:		query := fmt.Sprintf(`SELECT * FROM estate WHERE id = ? AND ST_Contains(ST_PolygonFromText(%s), ST_GeomFromText(%s))`, coordinates.coordinatesToText(), point)
+         .       30ms    891:		err = db.Get(&validatedEstate, query, estate.ID)
+         .          .    892:		if err != nil {
+         .          .    893:			if err == sql.ErrNoRows {
+         .          .    894:				continue
+         .          .    895:			} else {
+         .          .    896:				c.Echo().Logger.Errorf("db access is failed on executing validate if estate is in polygon : %v", err)
+ROUTINE ======================== main.searchEstates in /home/isucon/isuumo/webapp/go/main.go
+         0      480ms (flat, cum) 23.88% of Total
+         .          .    782:	countQuery := "SELECT COUNT(*) FROM estate WHERE "
+         .          .    783:	searchCondition := strings.Join(conditions, " AND ")
+         .          .    784:	limitOffset := " ORDER BY popularity DESC, id ASC LIMIT ? OFFSET ?"
+         .          .    785:
+         .          .    786:	var res EstateSearchResponse
+         .      100ms    787:	err = db.Get(&res.Count, countQuery+searchCondition, params...)
+         .          .    788:	if err != nil {
+         .          .    789:		c.Logger().Errorf("searchEstates DB execution error : %v", err)
+         .          .    790:		return c.NoContent(http.StatusInternalServerError)
+         .          .    791:	}
+         .          .    792:
+         .          .    793:	estates := []Estate{}
+         .          .    794:	params = append(params, perPage, page*perPage)
+         .      120ms    795:	err = db.Select(&estates, searchQuery+searchCondition+limitOffset, params...)
+         .          .    796:	if err != nil {
+         .          .    797:		if err == sql.ErrNoRows {
+         .          .    798:			return c.JSON(http.StatusOK, EstateSearchResponse{Count: 0, Estates: []Estate{}})
+         .          .    799:		}
+         .          .    800:		c.Logger().Errorf("searchEstates DB execution error : %v", err)
+         .          .    801:		return c.NoContent(http.StatusInternalServerError)
+         .          .    802:	}
+         .          .    803:
+         .          .    804:	res.Estates = estates
+         .          .    805:
+         .      260ms    806:	return c.JSON(http.StatusOK, res)
+         .          .    807:}
+         .          .    808:
+         .          .    809:func getLowPricedEstate(c echo.Context) error {
+         .          .    810:	estates := make([]Estate, 0, Limit)
+         .          .    811:	query := `SELECT * FROM estate ORDER BY rent ASC, id ASC LIMIT ?`
+ROUTINE ======================== main.searchRecommendedEstateWithChair in /home/isucon/isuumo/webapp/go/main.go
+         0       80ms (flat, cum)  3.98% of Total
+         .          .    844:	var estates []Estate
+         .          .    845:	w := chair.Width
+         .          .    846:	h := chair.Height
+         .          .    847:	d := chair.Depth
+         .          .    848:	query = `SELECT * FROM estate WHERE (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) OR (door_width >= ? AND door_height >= ?) ORDER BY popularity DESC, id ASC LIMIT ?`
+         .       20ms    849:	err = db.Select(&estates, query, w, h, w, d, h, w, h, d, d, w, d, h, Limit)
+         .          .    850:	if err != nil {
+         .          .    851:		if err == sql.ErrNoRows {
+         .          .    852:			return c.JSON(http.StatusOK, EstateListResponse{[]Estate{}})
+         .          .    853:		}
+         .          .    854:		c.Logger().Errorf("Database execution error : %v", err)
+         .          .    855:		return c.NoContent(http.StatusInternalServerError)
+         .          .    856:	}
+         .          .    857:
+         .       60ms    858:	return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
+         .          .    859:}
+         .          .    860:
+         .          .    861:func searchEstateNazotte(c echo.Context) error {
+         .          .    862:	coordinates := Coordinates{}
+         .          .    863:	err := c.Bind(&coordinates)
