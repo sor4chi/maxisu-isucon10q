@@ -1,0 +1,22 @@
+matching_groups:
+  - /api/chair/[0-9]+
+  - /api/chair/buy/[0-9]+
+  - /_next/static/*
+  - /api/estate/req_doc/[0-9]+
+  - /api/estate/[0-9]+
+  - /api/recommended_estate/[0-9]+
+  - /images/chair/.+
+  - /images/estate/.+
+  - /images/leaflet/.+
+sort: avg
+reverse: true
+metrics:
+  - count
+  - method
+  - uri
+  - min
+  - avg
+  - max
+  - sum
+file: /var/log/nginx/access.ndjson
+
