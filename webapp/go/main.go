@@ -418,7 +418,6 @@ func postChair(c echo.Context) error {
 	}
 	query = query[:len(query)-1]
 	_, err = dbChair.Exec(query)
-	estateCache.PurgeSearch()
 	if err != nil {
 		c.Logger().Errorf("failed to insert chair: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
@@ -646,11 +645,6 @@ func postEstate(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	tx, err := dbEstate.Begin()
-	if err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-	defer tx.Rollback()
 	query := "INSERT INTO estate(id, name, description, thumbnail, address, latitude, longitude, rent, door_height, door_width, features, popularity) VALUES "
 	for _, row := range records {
 		rm := RecordMapper{Record: row}
@@ -672,14 +666,13 @@ func postEstate(c echo.Context) error {
 		query += fmt.Sprintf("('%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v', '%v'),", id, name, description, thumbnail, address, latitude, longitude, rent, doorHeight, doorWidth, features, popularity)
 	}
 	query = query[:len(query)-1]
-	_, err = tx.Exec(query)
+	_, err = dbEstate.Exec(query)
 	if err != nil {
-		c.Logger().Errorf("failed to insert estate: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
-	if err := tx.Commit(); err != nil {
-		return c.NoContent(http.StatusInternalServerError)
-	}
+
+	estateCache.PurgeSearch()
+
 	return c.NoContent(http.StatusCreated)
 }
 
