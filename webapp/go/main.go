@@ -308,8 +308,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Estate DB connection failed : %v", err)
 	}
-	dbChair.SetMaxOpenConns(30)
-	dbEstate.SetMaxOpenConns(30)
+	dbChair.SetMaxOpenConns(15)
+	dbEstate.SetMaxOpenConns(15)
 	defer dbChair.Close()
 	defer dbEstate.Close()
 
