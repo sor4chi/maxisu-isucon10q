@@ -707,6 +707,7 @@ func postEstate(c echo.Context) error {
 	}
 
 	estateCache.PurgeSearch()
+	estateCache.PurgeLowPriced()
 
 	return c.NoContent(http.StatusCreated)
 }
@@ -825,6 +826,9 @@ func searchEstates(c echo.Context) error {
 }
 
 func getLowPricedEstate(c echo.Context) error {
+	if estates, ok := estateCache.GetLowPriced(); ok {
+		return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
+	}
 	estates := make([]Estate, 0, Limit)
 	query := `SELECT * FROM estate ORDER BY rent ASC, id ASC LIMIT ?`
 	err := dbEstate.Select(&estates, query, Limit)
@@ -834,6 +838,8 @@ func getLowPricedEstate(c echo.Context) error {
 		}
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	estateCache.SetLowPriced(estates)
 
 	return c.JSON(http.StatusOK, EstateListResponse{Estates: estates})
 }
