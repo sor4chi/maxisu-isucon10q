@@ -627,6 +627,10 @@ func getEstateDetail(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
+	if estate, ok := estateCache.GetDetail(c.Param("id")); ok {
+		return c.JSON(http.StatusOK, estate)
+	}
+
 	var estate Estate
 	err = dbEstate.Get(&estate, "SELECT * FROM estate WHERE id = ?", id)
 	if err != nil {
@@ -635,6 +639,8 @@ func getEstateDetail(c echo.Context) error {
 		}
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	estateCache.SetDetail(c.Param("id"), estate)
 
 	return c.JSON(http.StatusOK, estate)
 }
@@ -709,7 +715,7 @@ func searchEstates(c echo.Context) error {
 		c.QueryParam("features"),
 	})
 
-	estate, ok := estateCache.Get(key)
+	estate, ok := estateCache.GetSearch(key)
 	if ok {
 		return c.JSON(http.StatusOK, estate)
 	}
@@ -806,7 +812,7 @@ func searchEstates(c echo.Context) error {
 
 	res.Estates = estates
 
-	estateCache.Set(key, res)
+	estateCache.SetSearch(key, res)
 
 	return c.JSON(http.StatusOK, res)
 }
