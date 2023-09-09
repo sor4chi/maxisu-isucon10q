@@ -39,3 +39,4 @@ CREATE TABLE isuumo.chair
 
 CREATE INDEX isuumo_price_id_idx ON isuumo.chair (price ASC, id ASC);
 CREATE INDEX estate_popularity_id_idx ON isuumo.estate (popularity DESC, id ASC);
+CREATE INDEX estate_rent_id_idx ON isuumo.estate (rent ASC, id ASC);
