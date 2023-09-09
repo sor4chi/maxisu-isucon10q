@@ -248,6 +248,7 @@ func getEnv(key, defaultValue string) string {
 // ConnectDB isuumoデータベースに接続する
 func (mc *MySQLConnectionEnv) ConnectDB() (*sqlx.DB, error) {
 	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v", mc.User, mc.Password, mc.Host, mc.Port, mc.DBName)
+	dsn += "?interpolateParams=true"
 	return sqlx.Open("mysql", dsn)
 }
 
@@ -308,8 +309,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Estate DB connection failed : %v", err)
 	}
-	dbChair.SetMaxOpenConns(10)
-	dbEstate.SetMaxIdleConns(10)
+	dbChair.SetMaxOpenConns(15)
+	dbEstate.SetMaxOpenConns(15)
 	defer dbChair.Close()
 	defer dbEstate.Close()
 
