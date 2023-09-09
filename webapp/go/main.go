@@ -30,6 +30,8 @@ var mySQLConnectionDataEstate *MySQLConnectionEnv
 var chairSearchCondition ChairSearchCondition
 var estateSearchCondition EstateSearchCondition
 
+var estateCache *EstateCache
+
 type InitializeResponse struct {
 	Language string `json:"language"`
 }
@@ -310,6 +312,9 @@ func main() {
 	defer dbChair.Close()
 	defer dbEstate.Close()
 
+	// Initialize cache
+	estateCache = NewEstateCache()
+
 	// Start server
 	serverPort := fmt.Sprintf(":%v", getEnv("SERVER_PORT", "1323"))
 	log.Fatal(e.Start(serverPort))
@@ -413,12 +418,17 @@ func postChair(c echo.Context) error {
 	}
 	query = query[:len(query)-1]
 	_, err = dbChair.Exec(query)
+	estateCache.PurgeSearch()
 	if err != nil {
 		c.Logger().Errorf("failed to insert chair: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	return c.NoContent(http.StatusCreated)
+}
+
+func generateKeyFromParams(params []string) string {
+	return strings.Join(params, "_")
 }
 
 func searchChairs(c echo.Context) error {
@@ -697,6 +707,18 @@ func searchEstates(c echo.Context) error {
 	conditions := make([]string, 0)
 	params := make([]interface{}, 0)
 
+	key := generateKeyFromParams([]string{
+		c.QueryParam("doorWidthRangeId"),
+		c.QueryParam("doorHeightRangeId"),
+		c.QueryParam("rentRangeId"),
+		c.QueryParam("features"),
+	})
+
+	estate, ok := estateCache.Get(key)
+	if ok {
+		return c.JSON(http.StatusOK, estate)
+	}
+
 	if c.QueryParam("doorHeightRangeId") != "" {
 		doorHeight, err := getRange(estateSearchCondition.DoorHeight, c.QueryParam("doorHeightRangeId"))
 		if err != nil {
@@ -788,6 +810,8 @@ func searchEstates(c echo.Context) error {
 	}
 
 	res.Estates = estates
+
+	estateCache.Set(key, res)
 
 	return c.JSON(http.StatusOK, res)
 }
