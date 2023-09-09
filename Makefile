@@ -41,4 +41,4 @@ mysql-conf-deploy:
 .PHONY: app-deploy
 app-deploy:
 	cd ./webapp/go && make
-	systemctl restart isuumo.go.service
+	sudo systemctl restart isuumo.go.service
