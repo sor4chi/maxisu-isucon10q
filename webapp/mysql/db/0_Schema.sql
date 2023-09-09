@@ -39,5 +39,12 @@ CREATE TABLE isuumo.chair
 
 CREATE INDEX chair_price_id_idx ON isuumo.chair (price ASC, id ASC);
 CREATE INDEX chair_popularity_id_idx ON isuumo.chair (popularity DESC, id ASC);
+CREATE INDEX chair_height_idx ON isuumo.chair (height ASC);
+CREATE INDEX chair_width_idx ON isuumo.chair (width ASC);
+CREATE INDEX chair_color_idx ON isuumo.chair (color ASC);
+CREATE INDEX chair_depth_idx ON isuumo.chair (depth ASC);
+
 CREATE INDEX estate_popularity_id_idx ON isuumo.estate (popularity DESC, id ASC);
 CREATE INDEX estate_rent_id_idx ON isuumo.estate (rent ASC, id ASC);
+CREATE INDEX estate_door_height_idx ON isuumo.estate (door_height ASC);
+CREATE INDEX estate_door_width_idx ON isuumo.estate (door_width ASC);
