@@ -21,6 +21,23 @@ alp:
 pt:
 	sudo pt-query-digest /var/log/mysql/mysql-slow.log
 
+.PHONY: conf-deploy
+conf-deploy: nginx-conf-deploy mysql-conf-deploy
+
+.PHONY: nginx-conf-deploy
+nginx-conf-deploy:
+	echo "nginx conf deploy"
+	sudo cp -r s1/etc/nginx/* /etc/nginx
+	sudo nginx -t
+	sudo systemctl restart nginx
+
+.PHONY: mysql-conf-deploy
+mysql-conf-deploy:
+	echo "mysql conf deploy"
+	sudo cp -r s1/etc/mysql/* /etc/mysql
+	mysqld --verbose --help > /dev/null
+	sudo systemctl restart mysql
+
 .PHONY: app-deploy
 app-deploy:
 	cd ./webapp/go && make
