@@ -20,6 +20,15 @@ func (c *EstateCache) PurgeSearch() {
 	c.search = make(map[string]EstateSearchResponse)
 }
 
+func (c *EstateCache) GetDetail(key string) (Estate, bool) {
+	val, ok := c.detail[key]
+	return val, ok
+}
+
+func (c *EstateCache) SetDetail(key string, value Estate) {
+	c.detail[key] = value
+}
+
 func (c *EstateCache) GetLowPriced() ([]Estate, bool) {
 	if len(c.lowPriced) == 0 {
 		return nil, false

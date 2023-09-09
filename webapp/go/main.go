@@ -641,6 +641,10 @@ func getEstateDetail(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
+	if estate, ok := estateCache.GetDetail(c.Param("id")); ok {
+		return c.JSON(http.StatusOK, estate)
+	}
+
 	var estate Estate
 	err = dbEstate.Get(&estate, "SELECT * FROM estate WHERE id = ?", id)
 	if err != nil {
@@ -649,6 +653,8 @@ func getEstateDetail(c echo.Context) error {
 		}
 		return c.NoContent(http.StatusInternalServerError)
 	}
+
+	estateCache.SetDetail(c.Param("id"), estate)
 
 	return c.JSON(http.StatusOK, estate)
 }
