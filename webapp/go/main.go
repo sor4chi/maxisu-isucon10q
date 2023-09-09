@@ -367,6 +367,10 @@ func getChairDetail(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
+	if chair, ok := chairCache.GetDetail(c.Param("id")); ok {
+		return c.JSON(http.StatusOK, chair)
+	}
+
 	chair := Chair{}
 	query := `SELECT * FROM chair WHERE id = ?`
 	err = dbChair.Get(&chair, query, id)
@@ -378,6 +382,8 @@ func getChairDetail(c echo.Context) error {
 	} else if chair.Stock <= 0 {
 		return c.NoContent(http.StatusNotFound)
 	}
+
+	chairCache.SetDetail(c.Param("id"), chair)
 
 	return c.JSON(http.StatusOK, chair)
 }
@@ -599,6 +605,7 @@ func buyChair(c echo.Context) error {
 	}
 
 	chairCache.PurgeSearch()
+	chairCache.PurgeDetailByKey(c.Param("id"))
 
 	return c.NoContent(http.StatusOK)
 }

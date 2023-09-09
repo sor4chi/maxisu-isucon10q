@@ -36,6 +36,7 @@ func NewEstateCache() *EstateCache {
 
 type ChairCache struct {
 	search map[string]ChairSearchResponse
+	detail map[string]Chair
 }
 
 func (c *ChairCache) Get(key string) (ChairSearchResponse, bool) {
@@ -51,8 +52,22 @@ func (c *ChairCache) PurgeSearch() {
 	c.search = make(map[string]ChairSearchResponse)
 }
 
+func (c *ChairCache) GetDetail(key string) (Chair, bool) {
+	val, ok := c.detail[key]
+	return val, ok
+}
+
+func (c *ChairCache) SetDetail(key string, value Chair) {
+	c.detail[key] = value
+}
+
+func (c *ChairCache) PurgeDetailByKey(key string) {
+	delete(c.detail, key)
+}
+
 func NewChairCache() *ChairCache {
 	return &ChairCache{
 		search: make(map[string]ChairSearchResponse),
+		detail: make(map[string]Chair),
 	}
 }
