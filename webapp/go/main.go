@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -257,7 +258,6 @@ func main() {
 	e.Debug = false
 
 	// Middleware
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
 	// Initialize
@@ -286,14 +286,14 @@ func main() {
 	var err error
 	db, err = mySQLConnectionData.ConnectDB()
 	if err != nil {
-		e.Logger.Fatalf("DB connection failed : %v", err)
+		log.Fatalf("DB connection failed : %v", err)
 	}
 	db.SetMaxOpenConns(10)
 	defer db.Close()
 
 	// Start server
 	serverPort := fmt.Sprintf(":%v", getEnv("SERVER_PORT", "1323"))
-	e.Logger.Fatal(e.Start(serverPort))
+	log.Fatal(e.Start(serverPort))
 }
 
 func initialize(c echo.Context) error {
